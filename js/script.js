@@ -1,49 +1,40 @@
 // --- تهيئة قاعدة البيانات وربط المتغيرات ---
 const DB = {
-    mindmapTree: typeof Mind_Map !== 'undefined' ? Mind_Map.children : null,
+    mindmapTree: {
+        1: typeof Mind_Map !== 'undefined' ? Mind_Map.children : null,
+        2: typeof Mind_Map_1 !== 'undefined' ? Mind_Map_1.children : null
+    },
     
-    cards: typeof Flash_Cards !== 'undefined' ? Flash_Cards.map(item => ({
-        q: item.question, 
-        a: item.answer
-    })) : null,
+    cards: {
+        1: typeof Flash_Cards !== 'undefined' ? Flash_Cards.map(item => ({ q: item.question, a: item.answer })) : null,
+        2: typeof Flash_Cards_1 !== 'undefined' ? Flash_Cards_1.map(item => ({ q: item.question, a: item.answer })) : null
+    },
     
-    tf: typeof True_False !== 'undefined' ? True_False.map(item => ({
-        q: item.text, 
-        a: item.answer,
-        exp: item.explanation
-    })) : null,
+    tf: {
+        1: typeof True_False !== 'undefined' ? True_False.map(item => ({ q: item.text, a: item.answer, exp: item.explanation })) : null,
+        2: typeof True_False_1 !== 'undefined' ? True_False_1.map(item => ({ q: item.text, a: item.answer, exp: item.explanation })) : null
+    },
     
-    mcq: typeof Multiple_Choice !== 'undefined' ? Multiple_Choice.map(item => ({
-        q: item.q, 
-        opts: item.options, 
-        correct: item.correctIndex,
-        exp: item.rationale
-    })) : null,
+    mcq: {
+        1: typeof Multiple_Choice !== 'undefined' ? Multiple_Choice.map(item => ({ q: item.q, opts: item.options, correct: item.correctIndex, exp: item.rationale })) : null,
+        2: typeof Multiple_Choice_1 !== 'undefined' ? Multiple_Choice_1.map(item => ({ q: item.q, opts: item.options, correct: item.correctIndex, exp: item.rationale })) : null
+    },
     
-    fill: typeof Fill_Blank !== 'undefined' ? Fill_Blank.map(item => ({
-        q: item.text, 
-        a: item.answer 
-    })) : null,
+    fill: {
+        1: typeof Fill_Blank !== 'undefined' ? Fill_Blank.map(item => ({ q: item.text, a: item.answer })) : null,
+        2: typeof Fill_Blank_1 !== 'undefined' ? Fill_Blank_1.map(item => ({ q: item.text, a: item.answer })) : null
+    },
     
-    comp: typeof Compare !== 'undefined' ? Compare.map(item => {
-        let ansText = item.criteria.map(c => 
-            `<div class="mb-2 text-right">
-                <span class="font-black text-sm text-[color:var(--accent-primary)] border-b border-dashed border-[color:var(--border-color)] pb-1">▪️ ${c.label}</span>
-                <div class="mt-1 text-xs md:text-sm">
-                    <span class="font-bold">${item.caseA_label}:</span> ${c.answerA}<br>
-                    <span class="font-bold mt-1 inline-block">${item.caseB_label}:</span> ${c.answerB}
-                </div>
-            </div>`
-        ).join('');
-        return { q: item.title, a: ansText };
-    }) : null
+    comp: {
+        1: typeof Compare !== 'undefined' ? Compare : null,
+        2: typeof Compare_1 !== 'undefined' ? Compare_1 : null
+    }
 };
 
-// --- المظاهر (الثيمات) - الرمادي أصبح الأول ---
-// --- المظاهر (الثيمات) مرتبة لتتطابق مع HTML ---
+// --- المظاهر (الثيمات) ---
 const THEMES = [
     {
-        name: "الأخضر الأصلي", // 0
+        name: "الأخضر الأصلي", 
         vars: { 
             '--bg-main': 'linear-gradient(135deg, #4b6856 0%, #283b2f 100%)', 
             '--bg-panel': 'rgba(170, 187, 165, 0.9)', '--bg-panel-solid': '#aabba5', '--bg-panel-hover': '#96a891', 
@@ -52,7 +43,7 @@ const THEMES = [
         }
     },
     {
-        name: "الأخضر الرمادي", // 1
+        name: "الأخضر الرمادي", 
         vars: { 
             '--bg-main': 'linear-gradient(135deg, #71897b 0%, #4b6856 100%)', 
             '--bg-panel': 'rgba(245, 247, 245, 0.9)', '--bg-panel-solid': '#f4f7f5', '--bg-panel-hover': '#e2e8e4', 
@@ -61,7 +52,7 @@ const THEMES = [
         }
     },
     {
-        name: "المريمية الهادئة", // 2
+        name: "المريمية الهادئة", 
         vars: { 
             '--bg-main': 'linear-gradient(135deg, #aabba5 0%, #768f71 100%)', 
             '--bg-panel': 'rgba(255, 255, 255, 0.8)', '--bg-panel-solid': '#f0f5ee', '--bg-panel-hover': '#e1e9dd', 
@@ -70,7 +61,7 @@ const THEMES = [
         }
     },
     {
-        name: "الرمادي", // 3
+        name: "الرمادي", 
         vars: { 
             '--bg-main': 'hsl(210, 13%, 95%)', 
             '--bg-panel': 'hsl(204, 12.2%, 91.96%)', '--bg-panel-solid': 'hsl(210, 13%, 88%)', '--bg-panel-hover': 'hsl(204, 12%, 75%)', 
@@ -79,14 +70,16 @@ const THEMES = [
         }
     }
 ];
+
 // إدارة حالة التطبيق
 const State = {
     tab: 'mindmap', 
     fontSize: parseInt(localStorage.getItem('fontSize')) || 16,
+    activeSet: { mindmap: 1, tf: 1, cards: 1, mcq: 1, fill: 1, comp: 1 }, 
     cardsIdx: 0, cardsFlipped: false,
     tfIdx: 0, tfSelected: null, tfChecked: false, tfScore: 0,
     mcqIdx: 0, mcqSelected: null, mcqChecked: false, mcqScore: 0,
-    fillIdx: 0, fillVal: '', fillChecked: false, fillScore: 0,
+    fillIdx: 0, fillVal: '', fillChecked: false, fillScore: 0, fillScoreAdded: false,
     compIdx: 0, compChecked: false, compScore: 0
 };
 
@@ -104,17 +97,20 @@ const DOM = {
 };
 
 function updateTabCounters() {
-    const counts = { 
-        cards: DB.cards?.length, 
-        tf: DB.tf?.length, 
-        mcq: DB.mcq?.length, 
-        fill: DB.fill?.length, 
-        comp: DB.comp?.length 
-    };
+    const keys = ['cards', 'tf', 'mcq', 'fill', 'comp'];
+    const counts = {};
     
+    keys.forEach(key => {
+        if (DB[key]) {
+            const c1 = DB[key][1] ? DB[key][1].length : 0;
+            const c2 = DB[key][2] ? DB[key][2].length : 0;
+            counts[key] = (c1 > 0 && c2 > 0) ? `${c1} + ${c2}` : (c1 + c2);
+        }
+    });
+
     if(DOM.mobileSelect) {
         DOM.mobileSelect.querySelectorAll('option').forEach(opt => { 
-            if(counts[opt.value]) {
+            if(counts[opt.value] !== undefined) {
                 opt.textContent = opt.textContent.split(' (')[0] + ` (${counts[opt.value]})`; 
             }
         });
@@ -122,7 +118,7 @@ function updateTabCounters() {
     
     if(DOM.tabs) {
         DOM.tabs.forEach(btn => { 
-            if(counts[btn.dataset.tab]) {
+            if(counts[btn.dataset.tab] !== undefined) {
                 btn.textContent = btn.textContent.split(' (')[0] + ` (${counts[btn.dataset.tab]})`; 
             }
         });
@@ -139,11 +135,12 @@ function shuffleArray(array) {
 }
 
 function randomizeAllQuestions() { 
-    shuffleArray(DB.cards); 
-    shuffleArray(DB.tf); 
-    shuffleArray(DB.mcq); 
-    shuffleArray(DB.fill); 
-    shuffleArray(DB.comp); 
+    Object.keys(DB).forEach(key => {
+        if (key !== 'mindmapTree' && DB[key]) {
+            shuffleArray(DB[key][1]);
+            shuffleArray(DB[key][2]);
+        }
+    });
 }
 
 // تهيئة التطبيق
@@ -158,7 +155,6 @@ function initApp() {
     }
     applyTheme(DOM.themeSelect ? parseInt(DOM.themeSelect.value) : 0);
 
-    // ربط قائمة الإعدادات (الهاتف)
     if(DOM.settingsBtn && DOM.settingsMenu) {
         DOM.settingsBtn.addEventListener('click', () => {
             DOM.settingsMenu.classList.toggle('hidden');
@@ -173,10 +169,7 @@ function initApp() {
         });
     }
 
-    if(DOM.themeSelect) {
-        DOM.themeSelect.addEventListener('change', (e) => applyTheme(parseInt(e.target.value)));
-    }
-    
+    if(DOM.themeSelect) DOM.themeSelect.addEventListener('change', (e) => applyTheme(parseInt(e.target.value)));
     if(DOM.btnFontUp) DOM.btnFontUp.addEventListener('click', () => changeFont(1));
     if(DOM.btnFontDown) DOM.btnFontDown.addEventListener('click', () => changeFont(-1));
     
@@ -187,7 +180,6 @@ function initApp() {
                 b.classList.remove('active'); 
                 if(b.dataset.tab === State.tab) b.classList.add('active'); 
             });
-            randomizeAllQuestions(); 
             window.restartQuiz(State.tab);
         });
     }
@@ -198,7 +190,6 @@ function initApp() {
             e.target.classList.add('active');
             State.tab = e.target.dataset.tab; 
             if(DOM.mobileSelect) DOM.mobileSelect.value = State.tab; 
-            randomizeAllQuestions(); 
             window.restartQuiz(State.tab);
         }));
     }
@@ -221,7 +212,25 @@ function changeFont(val) {
 }
 
 function applyFontSize() { 
-document.documentElement.style.fontSize = State.fontSize + 'px';}
+    document.documentElement.style.fontSize = State.fontSize + 'px';
+}
+
+window.switchSet = function(tabKey, setNum) {
+    State.activeSet[tabKey] = setNum;
+    window.restartQuiz(tabKey);
+    updateTabCounters();
+    renderTab();
+};
+
+function getSetButtonsHTML(tabKey) {
+    const active = State.activeSet[tabKey];
+    return `
+        <div class="flex gap-1" dir="rtl">
+            <button class="w-6 h-6 flex justify-center items-center rounded text-xs font-black transition-all ${active === 1 ? 'bg-black text-white' : 'bg-black/30 text-white hover:bg-black/50'}" onclick="window.switchSet('${tabKey}', 1)">1</button>
+            <button class="w-6 h-6 flex justify-center items-center rounded text-xs font-black transition-all ${active === 2 ? 'bg-black text-white' : 'bg-black/30 text-white hover:bg-black/50'}" onclick="window.switchSet('${tabKey}', 2)">2</button>
+        </div>
+    `;
+}
 
 function renderTab() {
     if(!DOM.content) return; 
@@ -240,11 +249,16 @@ function renderTab() {
     attachDynamicListeners();
 }
 
-function getProgressBar(current, total) {
-    const perc = ((current) / total) * 100;
+function getProgressBar(current, total, tabKey) {
+    const perc = total > 0 ? ((current) / total) * 100 : 0;
+    let setBtns = getSetButtonsHTML(tabKey);
+    
     return `
-        <div class="flex justify-between text-xs font-bold text-[color:var(--text-muted)] mb-1">
-            <span>مؤشر التقدم</span>
+        <div class="flex justify-between items-center text-xs font-bold text-[color:var(--text-muted)] mb-1">
+            <div class="flex items-center gap-2">
+                <span>مؤشر التقدم</span>
+                ${setBtns}
+            </div>
             <span>${current + 1 > total ? total : current + 1} / ${total}</span>
         </div>
         <div class="progress-container mb-3">
@@ -254,12 +268,12 @@ function getProgressBar(current, total) {
 }
 
 function renderFinishScreen(title, score, total, tabKey) {
-    const perc = Math.round((score / total) * 100);
+    const perc = total > 0 ? Math.round((score / total) * 100) : 0;
     return `
         <div class="text-center py-6 flex flex-col items-center animate-fade-in">
             <div class="text-5xl mb-4">🏆</div>
             <h2 class="text-xl font-black mb-2 text-[color:var(--accent-primary)]">إنجاز قسم: ${title}</h2>
-            <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] rounded-2xl p-6 mb-6 w-full max-w-xs shadow-sm">
+            <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] rounded-2xl p-6 mb-6 w-full max-w-xs shadow-sm mx-auto">
                 <div class="text-4xl font-black text-[color:var(--accent-primary)] mb-2">
                     ${score} <span class="text-xl text-[color:var(--text-muted)] opacity-60">/ ${total}</span>
                 </div>
@@ -309,15 +323,26 @@ function buildTreeHTML(node, level = 0) {
 }
 
 function renderMindmap() {
-    if(!DB.mindmapTree) return '<div class="text-center p-4">لا توجد بيانات للمشجرة</div>';
+    const active = State.activeSet.mindmap;
+    const currentData = DB.mindmapTree[active];
+    
+    const headerBtns = `
+        <div class="flex justify-center items-center gap-2 mb-4">
+            <span class="text-xs font-bold text-[color:var(--text-muted)]">اختر المشجرة:</span>
+            ${getSetButtonsHTML('mindmap')}
+        </div>
+    `;
+
+    if(!currentData || currentData.length === 0) return headerBtns + '<div class="text-center p-4">لا توجد بيانات للمشجرة في هذه المجموعة</div>';
     
     let treeHTML = `<ul class="tree-list root-list pr-0">`; 
-    DB.mindmapTree.forEach(node => { 
+    currentData.forEach(node => { 
         treeHTML += buildTreeHTML(node, 0); 
     }); 
     treeHTML += `</ul>`;
     
     return `
+        ${headerBtns}
         <div class="mb-4 text-center bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-2 rounded-xl">
             <p class="text-xs font-bold text-[color:var(--text-muted)]">انقر على العُقَد للتوسيع والطي.</p>
         </div>
@@ -326,38 +351,41 @@ function renderMindmap() {
 }
 
 function renderCards() {
-    if(!DB.cards || DB.cards.length === 0) return '<div class="text-center p-4">لا توجد بطاقات</div>';
-    if (State.cardsIdx >= DB.cards.length) return renderFinishScreen('البطاقات الذكية', DB.cards.length, DB.cards.length, 'cards');
+    const active = State.activeSet.cards;
+    const currentData = DB.cards[active];
+    if(!currentData || currentData.length === 0) return getProgressBar(0, 0, 'cards') + '<div class="text-center p-4">لا توجد بطاقات</div>';
+    if (State.cardsIdx >= currentData.length) return renderFinishScreen('البطاقات الذكية', currentData.length, currentData.length, 'cards');
     
-    const data = DB.cards[State.cardsIdx];
+    const data = currentData[State.cardsIdx];
     return `
-        ${getProgressBar(State.cardsIdx, DB.cards.length)}
-        <div class="flip-card mt-4 mb-4" id="action-flip">
+        ${getProgressBar(State.cardsIdx, currentData.length, 'cards')}
+        
+        <div class="flip-card mt-6 mb-6" id="action-flip">
             <div class="flip-card-inner ${State.cardsFlipped ? 'rotate-y-180' : ''}" style="transform: ${State.cardsFlipped ? 'rotateY(180deg)' : 'none'}">
-                <div class="flip-card-front p-4">
-                    <div class="text-xs font-bold mb-2 bg-[color:var(--bg-main)] px-3 py-1 rounded-full border border-[color:var(--border-color)]">👆 انقر للقلب</div>
-                    <div class="mt-2 text-base md:text-lg">${data.q}</div>
+                <div class="flip-card-front shadow-sm">
+                    <div class="text-base md:text-lg font-black leading-relaxed text-center">${data.q}</div>
                 </div>
-                <div class="flip-card-back p-4">
-                    <div class="text-xs font-bold mb-2 bg-black/20 px-3 py-1 rounded-full text-[color:var(--accent-text)] border border-[color:var(--accent-text)]">الإجابة</div>
-                    <div class="mt-2 text-sm md:text-base">${data.a}</div>
+                <div class="flip-card-back shadow-md">
+                    <div class="text-base md:text-lg font-black leading-relaxed text-center">${data.a}</div>
                 </div>
             </div>
         </div>
-        <div class="flex justify-center gap-2">
-            <button class="action-btn text-sm py-2 max-w-[100px] bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] border border-[color:var(--border-color)]" onclick="move(-1)" ${State.cardsIdx === 0 ? 'disabled' : ''}>السابق</button>
-            <button class="action-btn text-sm py-2 max-w-[150px]" id="btn-next">التالي 🡄</button>
+
+        <div class="flex justify-center gap-2 mt-4">
+            <button class="action-btn text-sm py-2 max-w-[100px] bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] border border-[color:var(--border-color)] shadow-sm" onclick="move(-1)" ${State.cardsIdx === 0 ? 'disabled' : ''}>السابق</button>
+            <button class="action-btn text-sm py-2 max-w-[150px] shadow-sm" id="btn-next">التالي 🡄</button>
         </div>
     `;
 }
 
 function renderTF() {
-    if(!DB.tf || DB.tf.length === 0) return '<div class="text-center p-4">لا توجد أسئلة صواب وخطأ</div>';
-    if (State.tfIdx >= DB.tf.length) return renderFinishScreen('الصواب والخطأ', State.tfScore, DB.tf.length, 'tf');
+    const active = State.activeSet.tf;
+    const currentData = DB.tf[active];
+    if(!currentData || currentData.length === 0) return getProgressBar(0, 0, 'tf') + '<div class="text-center p-4">لا توجد بيانات</div>';
+    if (State.tfIdx >= currentData.length) return renderFinishScreen('الصواب والخطأ', State.tfScore, currentData.length, 'tf');
     
-    const data = DB.tf[State.tfIdx]; 
+    const data = currentData[State.tfIdx]; 
     let msgHTML = '';
-    
     if (State.tfChecked) {
         const isCorrect = State.tfSelected === data.a;
         msgHTML = `
@@ -369,9 +397,9 @@ function renderTF() {
     }
     
     return `
-        ${getProgressBar(State.tfIdx, DB.tf.length)}
+        ${getProgressBar(State.tfIdx, currentData.length, 'tf')}
         <div class="relative bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-4 md:p-6 rounded-2xl mt-5 mb-4">
-            <div class="absolute -top-3 right-4 bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] px-3 py-1 rounded-lg text-xs font-black border border-[color:var(--bg-panel)]">حقيقة أم خرافة؟</div>
+            <div class="absolute -top-3 right-4 bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] px-3 py-1 rounded-lg text-xs font-black border border-[color:var(--bg-panel)]">صح / خطأ؟</div>
             <h3 class="text-base md:text-lg font-black text-center leading-relaxed mt-2">${data.q}</h3>
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -381,19 +409,20 @@ function renderTF() {
         ${msgHTML}
         <div class="flex justify-center mt-5">
             <button class="action-btn max-w-xs text-sm py-3" id="btn-next" ${!State.tfChecked ? 'disabled' : ''}>
-                ${State.tfIdx === DB.tf.length - 1 ? 'إنهاء الاختبار' : 'التالي 🡄'}
+                ${State.tfIdx === currentData.length - 1 ? 'إنهاء الاختبار' : 'التالي 🡄'}
             </button>
         </div>
     `;
 }
 
 function renderMCQ() {
-    if(!DB.mcq || DB.mcq.length === 0) return '<div class="text-center p-4">لا توجد أسئلة اختيارات</div>';
-    if (State.mcqIdx >= DB.mcq.length) return renderFinishScreen('الاختيار من متعدد', State.mcqScore, DB.mcq.length, 'mcq');
+    const active = State.activeSet.mcq;
+    const currentData = DB.mcq[active];
+    if(!currentData || currentData.length === 0) return getProgressBar(0, 0, 'mcq') + '<div class="text-center p-4">لا توجد بيانات</div>';
+    if (State.mcqIdx >= currentData.length) return renderFinishScreen('الاختيار من متعدد', State.mcqScore, currentData.length, 'mcq');
     
-    const data = DB.mcq[State.mcqIdx]; 
+    const data = currentData[State.mcqIdx]; 
     let msgHTML = '';
-    
     let optsHTML = data.opts.map((opt, i) => {
         let classes = "opt-btn p-3 rounded-xl font-bold text-right mb-2 block w-full text-sm md:text-base transition-all ";
         if (State.mcqChecked) { 
@@ -422,7 +451,7 @@ function renderMCQ() {
     }
     
     return `
-        ${getProgressBar(State.mcqIdx, DB.mcq.length)}
+        ${getProgressBar(State.mcqIdx, currentData.length, 'mcq')}
         <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] border-r-4 border-r-[color:var(--accent-primary)] p-4 rounded-xl mt-4 mb-4">
             <h3 class="text-base md:text-lg font-black leading-relaxed">${data.q}</h3>
         </div>
@@ -430,101 +459,79 @@ function renderMCQ() {
         ${msgHTML}
         <div class="flex justify-center mt-5">
             <button class="action-btn max-w-xs text-sm py-3" id="btn-next" ${!State.mcqChecked ? 'disabled' : ''}>
-                ${State.mcqIdx === DB.mcq.length - 1 ? 'إنهاء الاختبار' : 'التالي 🡄'}
+                ${State.mcqIdx === currentData.length - 1 ? 'إنهاء الاختبار' : 'التالي 🡄'}
             </button>
         </div>
     `;
 }
 
 function renderFill() {
-    if(!DB.fill || DB.fill.length === 0) return '<div class="text-center p-4">لا توجد أسئلة فراغات</div>';
-    if (State.fillIdx >= DB.fill.length) return renderFinishScreen('املأ الفراغ', State.fillScore, DB.fill.length, 'fill');
+    const active = State.activeSet.fill;
+    const currentData = DB.fill[active];
+    if(!currentData || currentData.length === 0) return getProgressBar(0, 0, 'fill') + '<div class="text-center p-4">لا توجد بيانات</div>';
+    if (State.fillIdx >= currentData.length) return renderFinishScreen('املأ الفراغ', State.fillScore, currentData.length, 'fill');
     
-    const data = DB.fill[State.fillIdx]; 
-    let msgHTML = '';
+    const data = currentData[State.fillIdx]; 
     const textHTML = data.q.replace('______', `<span class="inline-block border-b-2 border-dashed border-[color:var(--accent-primary)] w-20 mx-2 align-middle h-6 text-[color:var(--text-muted)] bg-[color:var(--bg-main)] rounded-t"></span>`);
     
+    let inputBoxHTML = '';
     if(State.fillChecked) {
         const userVal = State.fillVal.trim(); 
-        let isCorrect = false;
-        
-        if (userVal !== '') {
-            isCorrect = data.a.some(ans => ans.includes(userVal) || userVal.includes(ans));
+        const isCorrect = data.a.some(ans => ans.trim() === userVal || userVal.includes(ans.trim()));
+        if (isCorrect) {
+            inputBoxHTML = `<div class="input-stylish w-full text-center text-sm md:text-base font-black py-3 bg-[color:var(--accent-green)] text-white border-[color:var(--accent-green)] shadow-sm animate-fade-in cursor-default">🎉 إجابة صحيحة: ${userVal}</div>`;
+        } else {
+            inputBoxHTML = `<div class="input-stylish w-full text-center text-sm md:text-base font-black py-2 bg-[color:var(--accent-danger)] text-white border-[color:var(--accent-danger)] shadow-sm animate-fade-in flex flex-col justify-center items-center gap-1 cursor-default">${userVal ? `<span class="line-through opacity-75 text-xs">❌ إجابتك: ${userVal}</span>` : ''}<span class="text-sm md:text-base">💡 الصواب: ${data.a[0]}</span></div>`;
         }
-        
-        if (isCorrect) State.fillScore++;
-        
-        msgHTML = `
-            <div class="p-3 mt-4 rounded-xl border-2 text-center animate-fade-in text-sm font-black ${isCorrect ? 'bg-[color:var(--accent-green)] text-white border-[color:var(--accent-green)]' : 'bg-[color:var(--accent-danger)] text-white border-[color:var(--accent-danger)]'}">
-                ${isCorrect ? '🎉 إجابة صحيحة.' : '💡 الجواب المقبول: ' + data.a.join(' أو ')}
-            </div>
-        `;
+    } else {
+        inputBoxHTML = `<input type="text" id="fill-input" class="input-stylish text-center text-sm md:text-base font-black py-3 w-full shadow-sm focus:ring-2 focus:ring-[color:var(--accent-primary)] transition-all" placeholder="اكتب الكلمة هنا..." value="${State.fillVal}" autocomplete="off">`;
     }
     
     return `
-        ${getProgressBar(State.fillIdx, DB.fill.length)}
-        <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-4 rounded-xl mt-4 mb-4 text-center">
+        ${getProgressBar(State.fillIdx, currentData.length, 'fill')}
+        <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-4 md:p-6 rounded-xl mt-4 mb-6 text-center shadow-sm">
             <div class="text-base md:text-lg font-black leading-loose">${textHTML}</div>
         </div>
-        <div class="relative w-full">
-            <input type="text" id="fill-input" class="input-stylish text-center text-sm md:text-base font-black py-2" placeholder="اكتب الكلمة هنا..." value="${State.fillVal}" ${State.fillChecked ? 'disabled' : ''} autocomplete="off">
-        </div>
-        ${msgHTML}
-        ${!State.fillChecked ? `
-            <div class="flex justify-center mt-4">
-                <button class="action-btn max-w-xs bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] text-sm py-2 border-2 border-[color:var(--border-color)] hover:bg-[color:var(--bg-panel-hover)]" id="btn-check">تحقق</button>
-            </div>
-        ` : ''}
-        <div class="flex justify-center mt-5">
-            <button class="action-btn max-w-xs text-sm py-3" id="btn-next" ${!State.fillChecked ? 'disabled' : ''}>
-                ${State.fillIdx === DB.fill.length - 1 ? 'إنهاء الاختبار' : 'التالي 🡄'}
+        <div class="relative w-full max-w-md mx-auto mb-2">${inputBoxHTML}</div>
+        ${!State.fillChecked ? `<div class="flex justify-center mt-6"><button class="action-btn max-w-xs bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] text-sm py-3 border-2 border-[color:var(--border-color)] hover:bg-[color:var(--bg-panel-hover)] transition-all shadow-sm flex items-center justify-center gap-2" id="btn-check"><span class="text-xl">✔️</span> تحقق من الإجابة</button></div>` : ''}
+        <div class="flex justify-center mt-6 pt-4 border-t border-dashed border-[color:var(--border-color)]">
+            <button class="action-btn max-w-xs text-sm py-3 shadow-md" id="btn-next" ${!State.fillChecked ? 'disabled' : ''}>
+                ${State.fillIdx === currentData.length - 1 ? '🏁 إنهاء القسم' : 'التالية 🡄'}
             </button>
         </div>
     `;
 }
 
 function renderComp() {
-    if(!DB.comp || DB.comp.length === 0) return '<div class="text-center p-4">لا توجد أسئلة مقارنات</div>';
-    if (State.compIdx >= DB.comp.length) return renderFinishScreen('المقارنات', DB.comp.length, DB.comp.length, 'comp');
+    const active = State.activeSet.comp;
+    const currentData = DB.comp[active];
+    if(!currentData || currentData.length === 0) return getProgressBar(0, 0, 'comp') + '<div class="text-center p-4">لا توجد بيانات</div>';
+    if (State.compIdx >= currentData.length) return renderFinishScreen('المقارنات', currentData.length, currentData.length, 'comp');
     
-    const data = DB.comp[State.compIdx]; 
-    let ansHTML = '';
-    
-    if (State.compChecked) {
-        ansHTML = `
-            <div class="mt-6 border-t border-dashed border-[color:var(--border-color)] pt-6 relative animate-fade-in">
-                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] px-4 py-0.5 rounded-full text-xs font-black">الإجابة النموذجية</div>
-                <div class="p-4 bg-[color:var(--bg-panel-solid)] rounded-xl text-sm leading-relaxed border border-[color:var(--accent-green)] text-right mt-2">${data.a}</div>
-            </div>
-        `;
-    }
+    const data = currentData[State.compIdx]; 
+    let colA_HTML = data.criteria.map((c) => `
+        <div class="mb-4 last:mb-0">
+            <div class="text-xs md:text-sm font-black text-[color:var(--accent-primary)] mb-2 border-b border-dashed border-[color:var(--border-color)] pb-1">▪️ ${c.label}</div>
+            ${State.compChecked ? `<div class="p-2 text-sm leading-relaxed text-right font-bold animate-fade-in bg-transparent border-none">${c.answerA}</div>` : `<textarea class="w-full bg-transparent border-none outline-none resize-y text-sm px-2 py-1 min-h-[70px] text-[color:var(--text-main)] placeholder-[color:var(--text-muted)] focus:ring-0" placeholder="اكتب إجابتك هنا..."></textarea>`}
+        </div>
+    `).join('');
+
+    let colB_HTML = data.criteria.map((c) => `
+        <div class="mb-4 last:mb-0">
+            <div class="text-xs md:text-sm font-black text-[color:var(--accent-primary)] mb-2 border-b border-dashed border-[color:var(--border-color)] pb-1">▪️ ${c.label}</div>
+            ${State.compChecked ? `<div class="p-2 text-sm leading-relaxed text-right font-bold animate-fade-in bg-transparent border-none">${c.answerB}</div>` : `<textarea class="w-full bg-transparent border-none outline-none resize-y text-sm px-2 py-1 min-h-[70px] text-[color:var(--text-main)] placeholder-[color:var(--text-muted)] focus:ring-0" placeholder="اكتب إجابتك هنا..."></textarea>`}
+        </div>
+    `).join('');
     
     return `
-        ${getProgressBar(State.compIdx, DB.comp.length)}
-        <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-3 rounded-xl mt-4 mb-4">
-            <h3 class="text-base font-black text-center text-[color:var(--accent-primary)]">${data.q}</h3>
+        ${getProgressBar(State.compIdx, currentData.length, 'comp')}
+        <div class="bg-[color:var(--bg-panel-solid)] border-2 border-[color:var(--border-color)] p-4 rounded-xl mt-4 mb-6 shadow-sm"><h3 class="text-base md:text-lg font-black text-center text-[color:var(--accent-primary)] leading-relaxed">${data.title}</h3></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-[color:var(--bg-panel-solid)] rounded-xl border-2 border-[color:var(--border-color)] overflow-hidden shadow-sm flex flex-col animate-fade-in"><div class="bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] text-center font-black text-sm md:text-base py-3 px-4">${data.caseA_label}</div><div class="p-4 bg-[color:var(--bg-main)] flex-1">${colA_HTML}</div></div>
+            <div class="bg-[color:var(--bg-panel-solid)] rounded-xl border-2 border-[color:var(--border-color)] overflow-hidden shadow-sm flex flex-col animate-fade-in" style="animation-delay: 0.1s"><div class="bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] text-center font-black text-sm md:text-base py-3 px-4">${data.caseB_label}</div><div class="p-4 bg-[color:var(--bg-main)] flex-1">${colB_HTML}</div></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <div>
-                <div class="p-2 bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] rounded-t-xl text-center font-black text-xs">المفهوم الأول</div>
-                <textarea class="input-stylish rounded-t-none rounded-b-xl h-20 text-sm p-2" placeholder="اكتب هنا..." ${State.compChecked ? 'disabled' : ''}></textarea>
-            </div>
-            <div>
-                <div class="p-2 bg-[color:var(--accent-primary)] text-[color:var(--accent-text)] rounded-t-xl text-center font-black text-xs">المفهوم الثاني</div>
-                <textarea class="input-stylish rounded-t-none rounded-b-xl h-20 text-sm p-2" placeholder="اكتب هنا..." ${State.compChecked ? 'disabled' : ''}></textarea>
-            </div>
-        </div>
-        ${!State.compChecked ? `
-            <div class="flex justify-center mt-4">
-                <button class="action-btn max-w-xs bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] text-sm py-2 border-2 border-[color:var(--border-color)] hover:bg-[color:var(--bg-panel-hover)]" id="btn-check">عرض الإجابة</button>
-            </div>
-        ` : ''}
-        ${ansHTML}
-        <div class="flex justify-center mt-6">
-            <button class="action-btn max-w-xs text-sm py-3" id="btn-next" ${!State.compChecked ? 'disabled' : ''}>
-                ${State.compIdx === DB.comp.length - 1 ? 'إنهاء القسم' : 'التالية 🡄'}
-            </button>
-        </div>
+        ${!State.compChecked ? `<div class="flex justify-center mt-6 mb-2"><button class="action-btn max-w-xs bg-[color:var(--bg-panel-solid)] text-[color:var(--text-main)] text-sm py-3 border-2 border-[color:var(--border-color)] hover:bg-[color:var(--bg-panel-hover)] transition-all shadow-sm flex items-center justify-center gap-2" id="btn-check"><span class="text-xl">👁️</span> عرض الإجابات النموذجية</button></div>` : ''}
+        <div class="flex justify-center mt-6 pt-4 border-t border-dashed border-[color:var(--border-color)]"><button class="action-btn max-w-xs text-sm py-3 shadow-md" id="btn-next" ${!State.compChecked ? 'disabled' : ''}>${State.compIdx === currentData.length - 1 ? '🏁 إنهاء القسم' : 'التالية 🡄'}</button></div>
     `;
 }
 
@@ -534,11 +541,18 @@ function attachDynamicListeners() {
     const flip = document.getElementById('action-flip'); 
     const fillInp = document.getElementById('fill-input');
     
-    if(next) next.addEventListener('click', () => move(1));
+    if(next) next.addEventListener('click', () => window.move(1));
     
     if(check) {
         check.addEventListener('click', () => { 
-            if(State.tab === 'fill' && !State.fillChecked) State.fillChecked = true; 
+            const active = State.activeSet[State.tab];
+            if(State.tab === 'fill' && !State.fillChecked) {
+                const data = DB.fill[active][State.fillIdx];
+                const userVal = State.fillVal.trim();
+                const isCorrect = data.a.some(ans => ans.trim() === userVal || userVal.includes(ans.trim()));
+                if(isCorrect && !State.fillScoreAdded) { State.fillScore++; State.fillScoreAdded = true; }
+                State.fillChecked = true; 
+            }
             if(State.tab === 'comp' && !State.compChecked) State.compChecked = true; 
             renderTab(); 
         });
@@ -554,19 +568,19 @@ function attachDynamicListeners() {
     }
     
     document.querySelectorAll('.opt-btn').forEach(btn => btn.addEventListener('click', (e) => {
+        const active = State.activeSet[State.tab];
         if (State.tab === 'tf' && !State.tfChecked) { 
             const t = e.target.closest('.opt-btn'); 
             State.tfSelected = t.dataset.val === 'true'; 
             State.tfChecked = true; 
-            if (State.tfSelected === DB.tf[State.tfIdx].a) State.tfScore++; 
+            if (State.tfSelected === DB.tf[active][State.tfIdx].a) State.tfScore++; 
             renderTab(); 
         }
-        
         if (State.tab === 'mcq' && !State.mcqChecked) { 
             const t = e.target.closest('.opt-btn'); 
             State.mcqSelected = parseInt(t.dataset.idx); 
             State.mcqChecked = true; 
-            if (State.mcqSelected === DB.mcq[State.mcqIdx].correct) State.mcqScore++; 
+            if (State.mcqSelected === DB.mcq[active][State.mcqIdx].correct) State.mcqScore++; 
             renderTab(); 
         }
     }));
@@ -576,7 +590,7 @@ window.move = function(dir) {
     if (State.tab === 'cards') { State.cardsIdx += dir; State.cardsFlipped = false; }
     if (State.tab === 'tf') { State.tfIdx += dir; State.tfChecked = false; State.tfSelected = null; }
     if (State.tab === 'mcq') { State.mcqIdx += dir; State.mcqChecked = false; State.mcqSelected = null; }
-    if (State.tab === 'fill') { State.fillIdx += dir; State.fillChecked = false; State.fillVal = ''; }
+    if (State.tab === 'fill') { State.fillIdx += dir; State.fillChecked = false; State.fillVal = ''; State.fillScoreAdded = false; }
     if (State.tab === 'comp') { State.compIdx += dir; State.compChecked = false; }
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     renderTab();
@@ -586,9 +600,10 @@ window.restartQuiz = function(tab) {
     if (tab === 'cards') { State.cardsIdx = 0; State.cardsFlipped = false; }
     if (tab === 'tf') { State.tfIdx = 0; State.tfScore = 0; State.tfChecked = false; State.tfSelected = null; }
     if (tab === 'mcq') { State.mcqIdx = 0; State.mcqScore = 0; State.mcqChecked = false; State.mcqSelected = null; }
-    if (tab === 'fill') { State.fillIdx = 0; State.fillScore = 0; State.fillChecked = false; State.fillVal = ''; }
+    if (tab === 'fill') { State.fillIdx = 0; State.fillScore = 0; State.fillChecked = false; State.fillVal = ''; State.fillScoreAdded = false; }
     if (tab === 'comp') { State.compIdx = 0; State.compChecked = false; }
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    updateTabCounters();
     renderTab();
 }
 
